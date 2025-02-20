@@ -84,7 +84,7 @@ private:
   bool imu_en = true;
   bool gravity_est_en = true;
   bool ba_bg_est_en = true;
-  bool exposure_estimate_en = true;
+  // bool exposure_estimate_en = true;
 };
 typedef std::shared_ptr<ImuProcess> ImuProcessPtr;
 #endif

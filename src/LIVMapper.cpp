@@ -55,18 +55,18 @@ void LIVMapper::readParameters(ros::NodeHandle &nh)
   nh.param<int>("common/lidar_en", lidar_en, 1);
   nh.param<string>("common/img_topic", img_topic, "/left_camera/image");
 
-  nh.param<bool>("vio/normal_en", normal_en, true);
-  nh.param<bool>("vio/inverse_composition_en", inverse_composition_en, false);
-  nh.param<int>("vio/max_iterations", max_iterations, 5);
-  nh.param<double>("vio/img_point_cov", IMG_POINT_COV, 100);
-  nh.param<bool>("vio/raycast_en", raycast_en, false);
+  // nh.param<bool>("vio/normal_en", normal_en, true);
+  // nh.param<bool>("vio/inverse_composition_en", inverse_composition_en, false);
+  // nh.param<int>("vio/max_iterations", max_iterations, 5);
+  // nh.param<double>("vio/img_point_cov", IMG_POINT_COV, 100);
+  // nh.param<bool>("vio/raycast_en", raycast_en, false);
   nh.param<bool>("vio/exposure_estimate_en", exposure_estimate_en, true);
   nh.param<double>("vio/inv_expo_cov", inv_expo_cov, 0.2);
-  nh.param<int>("vio/grid_size", grid_size, 5);
-  nh.param<int>("vio/grid_n_height", grid_n_height, 17);
-  nh.param<int>("vio/patch_pyrimid_level", patch_pyrimid_level, 3);
-  nh.param<int>("vio/patch_size", patch_size, 8);
-  nh.param<double>("vio/outlier_threshold", outlier_threshold, 1000);
+  // nh.param<int>("vio/grid_size", grid_size, 5);
+  // nh.param<int>("vio/grid_n_height", grid_n_height, 17);
+  // nh.param<int>("vio/patch_pyrimid_level", patch_pyrimid_level, 3);
+  // nh.param<int>("vio/patch_size", patch_size, 8);
+  // nh.param<double>("vio/outlier_threshold", outlier_threshold, 1000);
 
   nh.param<double>("time_offset/exposure_time_init", exposure_time_init, 0.0);
   nh.param<double>("time_offset/img_time_offset", img_time_offset, 0.0);
@@ -118,27 +118,6 @@ void LIVMapper::initializeComponents()
   voxelmap_manager->extT_ << VEC_FROM_ARRAY(extrinT);
   voxelmap_manager->extR_ << MAT_FROM_ARRAY(extrinR);
 
-  // if (!vk::camera_loader::loadFromRosNs("laserMapping", vio_manager->cam)) throw std::runtime_error("Camera model not correctly specified.");
-
-  // vio_manager->grid_size = grid_size;
-  // vio_manager->patch_size = patch_size;
-  // vio_manager->outlier_threshold = outlier_threshold;
-  // vio_manager->setImuToLidarExtrinsic(extT, extR);
-  // vio_manager->setLidarToCameraExtrinsic(cameraextrinR, cameraextrinT);
-  // vio_manager->state = &_state;
-  // vio_manager->state_propagat = &state_propagat;
-  // vio_manager->max_iterations = max_iterations;
-  // vio_manager->img_point_cov = IMG_POINT_COV;
-  // vio_manager->normal_en = normal_en;
-  // vio_manager->inverse_composition_en = inverse_composition_en;
-  // vio_manager->raycast_en = raycast_en;
-  // vio_manager->grid_n_width = grid_n_width;
-  // vio_manager->grid_n_height = grid_n_height;
-  // vio_manager->patch_pyrimid_level = patch_pyrimid_level;
-  // vio_manager->exposure_estimate_en = exposure_estimate_en;
-  // vio_manager->colmap_output_en = colmap_output_en;
-  // vio_manager->initializeVIO();
-
   p_imu->set_extrinsic(extT, extR);
   p_imu->set_gyr_cov_scale(V3D(gyr_cov, gyr_cov, gyr_cov));
   p_imu->set_acc_cov_scale(V3D(acc_cov, acc_cov, acc_cov));
@@ -187,7 +166,6 @@ void LIVMapper::initializeSubscribersAndPublishers(ros::NodeHandle &nh)
             nh.subscribe(lid_topic, 200000, &LIVMapper::livox_pcl_cbk, this): 
             nh.subscribe(lid_topic, 200000, &LIVMapper::standard_pcl_cbk, this);
   sub_imu = nh.subscribe(imu_topic, 200000, &LIVMapper::imu_cbk, this);
-  // sub_img = nh.subscribe(img_topic, 200000, &LIVMapper::img_cbk, this);
   
   pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered", 100);
   pubNormal = nh.advertise<visualization_msgs::MarkerArray>("visualization_marker", 100);
@@ -202,7 +180,7 @@ void LIVMapper::initializeSubscribersAndPublishers(ros::NodeHandle &nh)
   pubLaserCloudDynRmed = nh.advertise<sensor_msgs::PointCloud2>("/dyn_obj_removed", 100);
   pubLaserCloudDynDbg = nh.advertise<sensor_msgs::PointCloud2>("/dyn_obj_dbg_hist", 100);
   mavros_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 10);
-  // pubImage = it.advertise("/rgb_img", 1);
+
   pubImuPropOdom = nh.advertise<nav_msgs::Odometry>("/LIVO2/imu_propagate", 10000);
   imu_prop_timer = nh.createTimer(ros::Duration(0.004), &LIVMapper::imu_prop_callback, this);
   voxelmap_manager->voxel_map_pub_= nh.advertise<visualization_msgs::MarkerArray>("/planes", 10000);
@@ -268,61 +246,6 @@ void LIVMapper::stateEstimationAndMapping()
       break;
   }
 }
-
-// void LIVMapper::handleVIO() 
-// {
-//   euler_cur = RotMtoEuler(_state.rot_end);
-//   fout_pre << std::setw(20) << LidarMeasures.last_lio_update_time - _first_lidar_time << " " << euler_cur.transpose() * 57.3 << " "
-//             << _state.pos_end.transpose() << " " << _state.vel_end.transpose() << " " << _state.bias_g.transpose() << " "
-//             << _state.bias_a.transpose() << " " << V3D(_state.inv_expo_time, 0, 0).transpose() << std::endl;
-    
-//   if (pcl_w_wait_pub->empty() || (pcl_w_wait_pub == nullptr)) 
-//   {
-//     std::cout << "[ VIO ] No point!!!" << std::endl;
-//     return;
-//   }
-    
-//   std::cout << "[ VIO ] Raw feature num: " << pcl_w_wait_pub->points.size() << std::endl;
-
-//   if (fabs((LidarMeasures.last_lio_update_time - _first_lidar_time) - plot_time) < (frame_cnt / 2 * 0.1)) 
-//   {
-//     vio_manager->plot_flag = true;
-//   } 
-//   else 
-//   {
-//     vio_manager->plot_flag = false;
-//   }
-
-//   vio_manager->processFrame(LidarMeasures.measures.back().img, _pv_list, voxelmap_manager->voxel_map_, LidarMeasures.last_lio_update_time - _first_lidar_time);
-
-//   if (imu_prop_enable) 
-//   {
-//     ekf_finish_once = true;
-//     latest_ekf_state = _state;
-//     latest_ekf_time = LidarMeasures.last_lio_update_time;
-//     state_update_flg = true;
-//   }
-
-//   // int size_sub_map = vio_manager->visual_sub_map_cur.size();
-//   // visual_sub_map->reserve(size_sub_map);
-//   // for (int i = 0; i < size_sub_map; i++) 
-//   // {
-//   //   PointType temp_map;
-//   //   temp_map.x = vio_manager->visual_sub_map_cur[i]->pos_[0];
-//   //   temp_map.y = vio_manager->visual_sub_map_cur[i]->pos_[1];
-//   //   temp_map.z = vio_manager->visual_sub_map_cur[i]->pos_[2];
-//   //   temp_map.intensity = 0.;
-//   //   visual_sub_map->push_back(temp_map);
-//   // }
-
-//   publish_frame_world(pubLaserCloudFullRes);
-//   publish_img_rgb(pubImage, vio_manager);
-
-//   euler_cur = RotMtoEuler(_state.rot_end);
-//   fout_out << std::setw(20) << LidarMeasures.last_lio_update_time - _first_lidar_time << " " << euler_cur.transpose() * 57.3 << " "
-//             << _state.pos_end.transpose() << " " << _state.vel_end.transpose() << " " << _state.bias_g.transpose() << " "
-//             << _state.bias_a.transpose() << " " << V3D(_state.inv_expo_time, 0, 0).transpose() << " " << feats_undistort->points.size() << std::endl;
-// }
 
 void LIVMapper::handleLIO() 
 {    
@@ -791,69 +714,6 @@ void LIVMapper::imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
   sig_buffer.notify_all();
 }
 
-// cv::Mat LIVMapper::getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
-// {
-//   cv::Mat img;
-//   img = cv_bridge::toCvCopy(img_msg, "bgr8")->image;
-//   return img;
-// }
-
-// static int i = 0;
-// void LIVMapper::img_cbk(const sensor_msgs::ImageConstPtr &msg_in)
-// {
-//   if (!img_en) return;
-//   sensor_msgs::Image::Ptr msg(new sensor_msgs::Image(*msg_in));
-//   // if ((abs(msg->header.stamp.toSec() - last_timestamp_img) > 0.2 && last_timestamp_img > 0) || sync_jump_flag)
-//   // {
-//   //   ROS_WARN("img jumps %.3f\n", msg->header.stamp.toSec() - last_timestamp_img);
-//   //   sync_jump_flag = true;
-//   //   msg->header.stamp = ros::Time().fromSec(last_timestamp_img + 0.1);
-//   // }
-
-//   // Hiliti2022 40Hz
-//   // if (hilti_en)
-//   // {
-//   //   i++;
-//   //   if (i % 4 != 0) return;
-//   // }
-//   // double msg_header_time =  msg->header.stamp.toSec();
-//   double msg_header_time = msg->header.stamp.toSec() + img_time_offset;
-//   if (abs(msg_header_time - last_timestamp_img) < 0.001) return;
-//   ROS_INFO("Get image, its header time: %.6f", msg_header_time);
-//   if (last_timestamp_lidar < 0) return;
-
-//   if (msg_header_time < last_timestamp_img)
-//   {
-//     ROS_ERROR("image loop back. \n");
-//     return;
-//   }
-
-//   mtx_buffer.lock();
-
-//   double img_time_correct = msg_header_time; // last_timestamp_lidar + 0.105;
-
-//   if (img_time_correct - last_timestamp_img < 0.02)
-//   {
-//     ROS_WARN("Image need Jumps: %.6f", img_time_correct);
-//     mtx_buffer.unlock();
-//     sig_buffer.notify_all();
-//     return;
-//   }
-
-//   cv::Mat img_cur = getImageFromMsg(msg);
-//   img_buffer.push_back(img_cur);
-//   img_time_buffer.push_back(img_time_correct);
-
-//   // ROS_INFO("Correct Image time: %.6f", img_time_correct);
-
-//   last_timestamp_img = img_time_correct;
-//   // cv::imshow("img", img);
-//   // cv::waitKey(1);
-//   // cout<<"last_timestamp_img:::"<<last_timestamp_img<<endl;
-//   mtx_buffer.unlock();
-//   sig_buffer.notify_all();
-// }
-
 bool LIVMapper::sync_packages(LidarMeasureGroup &meas)
 {
   if (lid_raw_data_buffer.empty() && lidar_en) return false;
@@ -1066,77 +926,16 @@ bool LIVMapper::sync_packages(LidarMeasureGroup &meas)
   ROS_ERROR("out sync");
 }
 
-// void LIVMapper::publish_img_rgb(const image_transport::Publisher &pubImage, VIOManagerPtr vio_manager)
-// {
-//   cv::Mat img_rgb = vio_manager->img_cp;
-//   cv_bridge::CvImage out_msg;
-//   out_msg.header.stamp = ros::Time::now();
-//   // out_msg.header.frame_id = "camera_init";
-//   out_msg.encoding = sensor_msgs::image_encodings::BGR8;
-//   out_msg.image = img_rgb;
-//   pubImage.publish(out_msg.toImageMsg());
-// }
-
 void LIVMapper::publish_frame_world(const ros::Publisher &pubLaserCloudFullRes)
 {
   if (pcl_w_wait_pub->empty()) return;
   PointCloudXYZRGB::Ptr laserCloudWorldRGB(new PointCloudXYZRGB());
-  // if (img_en)
-  // {
-  //   static int pub_num = 1;
-  //   *pcl_wait_pub += *pcl_w_wait_pub;
-  //   if(pub_num == pub_scan_num)
-  //   {
-  //     pub_num = 1;
-  //     size_t size = pcl_wait_pub->points.size();
-  //     laserCloudWorldRGB->reserve(size);
-  //     // double inv_expo = _state.inv_expo_time;
-  //     cv::Mat img_rgb = vio_manager->img_rgb;
-  //     for (size_t i = 0; i < size; i++)
-  //     {
-  //       PointTypeRGB pointRGB;
-  //       pointRGB.x = pcl_wait_pub->points[i].x;
-  //       pointRGB.y = pcl_wait_pub->points[i].y;
-  //       pointRGB.z = pcl_wait_pub->points[i].z;
-
-  //       V3D p_w(pcl_wait_pub->points[i].x, pcl_wait_pub->points[i].y, pcl_wait_pub->points[i].z);
-  //       V3D pf(vio_manager->new_frame_->w2f(p_w)); if (pf[2] < 0) continue;
-  //       V2D pc(vio_manager->new_frame_->w2c(p_w));
-
-  //       if (vio_manager->new_frame_->cam_->isInFrame(pc.cast<int>(), 3)) // 100
-  //       {
-  //         V3F pixel = vio_manager->getInterpolatedPixel(img_rgb, pc);
-  //         pointRGB.r = pixel[2];
-  //         pointRGB.g = pixel[1];
-  //         pointRGB.b = pixel[0];
-  //         // pointRGB.r = pixel[2] * inv_expo; pointRGB.g = pixel[1] * inv_expo; pointRGB.b = pixel[0] * inv_expo;
-  //         // if (pointRGB.r > 255) pointRGB.r = 255;
-  //         // else if (pointRGB.r < 0) pointRGB.r = 0;
-  //         // if (pointRGB.g > 255) pointRGB.g = 255;
-  //         // else if (pointRGB.g < 0) pointRGB.g = 0;
-  //         // if (pointRGB.b > 255) pointRGB.b = 255;
-  //         // else if (pointRGB.b < 0) pointRGB.b = 0;
-  //         if (pf.norm() > blind_rgb_points) laserCloudWorldRGB->push_back(pointRGB);
-  //       }
-  //     }
-  //   }
-  //   else
-  //   {
-  //     pub_num++;
-  //   }
-  // }
 
   /*** Publish Frame ***/
   sensor_msgs::PointCloud2 laserCloudmsg;
-  // if (img_en)
-  // {
-    // cout << "RGB pointcloud size: " << laserCloudWorldRGB->size() << endl;
-  //   pcl::toROSMsg(*laserCloudWorldRGB, laserCloudmsg);
-  // }
-  // else 
-  // { 
-    pcl::toROSMsg(*pcl_w_wait_pub, laserCloudmsg); 
-  // }
+
+  pcl::toROSMsg(*pcl_w_wait_pub, laserCloudmsg); 
+
   laserCloudmsg.header.stamp = ros::Time::now(); //.fromSec(last_timestamp_lidar);
   laserCloudmsg.header.frame_id = "camera_init";
   pubLaserCloudFullRes.publish(laserCloudmsg);

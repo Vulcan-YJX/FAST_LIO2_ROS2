@@ -88,10 +88,6 @@ find_package(catkin REQUIRED COMPONENTS
   livox_ros_driver
   message_generation
   eigen_conversions
-  # vikit_common
-  # vikit_ros
-  # cv_bridge
-  # image_transport
 )
 
 find_package(Eigen3 REQUIRED)
@@ -103,7 +99,6 @@ find_package(Boost REQUIRED COMPONENTS thread)
 # Define the catkin package
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime
-  # cv_bridge vikit_common vikit_ros image_transport
   DEPENDS EIGEN3 PCL OpenCV Sophus
 )
 
@@ -118,7 +113,6 @@ include_directories(
 )
 
 # Add libraries
-# add_library(vio src/vio.cpp src/frame.cpp src/visual_point.cpp)
 add_library(lio src/voxel_map.cpp)
 add_library(pre src/preprocess.cpp)
 add_library(imu_proc src/IMU_Processing.cpp)
@@ -130,7 +124,6 @@ add_executable(fastlivo_mapping src/main.cpp)
 # Link libraries to the executable
 target_link_libraries(fastlivo_mapping
   laser_mapping
-  # vio
   lio
   pre
   imu_proc

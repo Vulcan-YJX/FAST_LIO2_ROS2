@@ -16,12 +16,9 @@ which is included as part of this source code package.
 #include "voxel_map.h"
 #include "IMU_Processing.h"
 #include <pcl/filters/voxel_grid.h>
-// #include "vio.h"
 #include "preprocess.h"
 #include <cv_bridge/cv_bridge.h>
-// #include <image_transport/image_transport.h>
 #include <nav_msgs/Path.h>
-// #include <vikit/camera_loader.h>
 
 class LIVMapper
 {
@@ -50,8 +47,7 @@ public:
   void standard_pcl_cbk(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void livox_pcl_cbk(const livox_ros_driver::CustomMsg::ConstPtr &msg_in);
   void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in);
-  // void img_cbk(const sensor_msgs::ImageConstPtr &msg_in);
-  // void publish_img_rgb(const image_transport::Publisher &pubImage, VIOManagerPtr vio_manager);
+
   void publish_frame_world(const ros::Publisher &pubLaserCloudFullRes);
   void publish_visual_sub_map(const ros::Publisher &pubSubVisualMap);
   void publish_effect_world(const ros::Publisher &pubLaserCloudEffect, const std::vector<PointToPlane> &ptpl_list);
@@ -62,7 +58,6 @@ public:
   template <typename T> void set_posestamp(T &out);
   template <typename T> void pointBodyToWorld(const Eigen::Matrix<T, 3, 1> &pi, Eigen::Matrix<T, 3, 1> &po);
   template <typename T> Eigen::Matrix<T, 3, 1> pointBodyToWorld(const Eigen::Matrix<T, 3, 1> &pi);
-  // cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg);
 
   std::mutex mtx_buffer, mtx_buffer_imu_prop;
   std::condition_variable sig_buffer;
@@ -75,10 +70,10 @@ public:
   V3D extT;
   M3D extR;
 
-  int feats_down_size = 0, max_iterations = 0;
+  int feats_down_size = 0;
 
   double res_mean_last = 0.05;
-  double gyr_cov = 0, acc_cov = 0, inv_expo_cov = 0;
+  double gyr_cov = 0, acc_cov = 0;
   double blind_rgb_points = 0.0;
   double last_timestamp_lidar = -1.0, last_timestamp_imu = -1.0, last_timestamp_img = -1.0;
   double filter_size_surf_min = 0;
@@ -107,15 +102,15 @@ public:
   bool lidar_pushed = false, imu_en, gravity_est_en, flg_reset = false, ba_bg_est_en = true;
   bool dense_map_en = false;
   int img_en = 1, imu_int_frame = 3;
-  bool normal_en = true;
-  bool exposure_estimate_en = false;
+  // bool normal_en = true;
+  // bool exposure_estimate_en = false;
   double exposure_time_init = 0.0;
-  bool inverse_composition_en = false;
-  bool raycast_en = false;
+  // bool inverse_composition_en = false;
+  // bool raycast_en = false;
   int lidar_en = 1;
   bool is_first_frame = false;
-  int grid_size, patch_size, grid_n_width, grid_n_height, patch_pyrimid_level;
-  double outlier_threshold;
+  int grid_n_width;
+  // double outlier_threshold;
   double plot_time;
   int frame_cnt;
   double img_time_offset = 0.0;
@@ -129,7 +124,7 @@ public:
   vector<double> extrinR;
   vector<double> cameraextrinT;
   vector<double> cameraextrinR;
-  double IMG_POINT_COV;
+  // double IMG_POINT_COV;
 
   PointCloudXYZI::Ptr visual_sub_map;
   PointCloudXYZI::Ptr feats_undistort;
@@ -157,13 +152,12 @@ public:
   PreprocessPtr p_pre;
   ImuProcessPtr p_imu;
   VoxelMapManagerPtr voxelmap_manager;
-  // VIOManagerPtr vio_manager;
 
   ros::Publisher plane_pub;
   ros::Publisher voxel_pub;
   ros::Subscriber sub_pcl;
   ros::Subscriber sub_imu;
-  // ros::Subscriber sub_img;
+
   ros::Publisher pubLaserCloudFullRes;
   ros::Publisher pubNormal;
   ros::Publisher pubSubVisualMap;
@@ -174,7 +168,7 @@ public:
   ros::Publisher pubLaserCloudDyn;
   ros::Publisher pubLaserCloudDynRmed;
   ros::Publisher pubLaserCloudDynDbg;
-  // image_transport::Publisher pubImage;
+
   ros::Publisher mavros_pose_publisher;
   ros::Timer imu_prop_timer;
 
