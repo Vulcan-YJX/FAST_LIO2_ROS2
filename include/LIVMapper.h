@@ -73,7 +73,7 @@ public:
   int feats_down_size = 0;
 
   double res_mean_last = 0.05;
-  double gyr_cov = 0, acc_cov = 0;
+  double gyr_cov = 0, acc_cov = 0, inv_expo_cov = 0;
   double blind_rgb_points = 0.0;
   double last_timestamp_lidar = -1.0, last_timestamp_imu = -1.0, last_timestamp_img = -1.0;
   double filter_size_surf_min = 0;
@@ -103,7 +103,7 @@ public:
   bool dense_map_en = false;
   int img_en = 1, imu_int_frame = 3;
   // bool normal_en = true;
-  // bool exposure_estimate_en = false;
+  bool exposure_estimate_en = false;
   double exposure_time_init = 0.0;
   // bool inverse_composition_en = false;
   // bool raycast_en = false;
