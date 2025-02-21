@@ -19,8 +19,6 @@ LIVMapper::LIVMapper(rclcpp::Node::SharedPtr nh)
 {
   extrinT.assign(3, 0.0);
   extrinR.assign(9, 0.0);
-  cameraextrinT.assign(3, 0.0);
-  cameraextrinR.assign(9, 0.0);
 
   p_pre.reset(new Preprocess());
   p_imu.reset(new ImuProcess(nh));
@@ -52,68 +50,88 @@ LIVMapper::~LIVMapper() {}
 
 void LIVMapper::readParameters()
 {
-  nh_->declare_parameter<string>("common/lid_topic", lid_topic);
+  nh_->declare_parameter<string>("common/lid_topic", "/livox/lidar");
   nh_->get_parameter("common/lid_topic", lid_topic);
-  nh_->declare_parameter<string>("common/imu_topic", imu_topic);
+  nh_->declare_parameter<string>("common/imu_topic", "/livox/imu");
   nh_->get_parameter("common/imu_topic", imu_topic);
-  nh_->declare_parameter<bool>("common/ros_driver_bug_fix", ros_driver_fix_en);
+  nh_->declare_parameter<bool>("common/ros_driver_bug_fix", false);
   nh_->get_parameter("common/ros_driver_bug_fix", ros_driver_fix_en);
-  nh_->declare_parameter<int>("common/img_en", img_en);
+  nh_->declare_parameter<int>("common/img_en", 1);
   nh_->get_parameter("common/img_en", img_en);
-  nh_->declare_parameter<int>("common/lidar_en", lidar_en);
+  nh_->declare_parameter<int>("common/lidar_en", 1);
   nh_->get_parameter("common/lidar_en", lidar_en);
-  nh_->declare_parameter<bool>("vio/exposure_estimate_en", exposure_estimate_en);
+
+  nh_->declare_parameter<bool>("vio/exposure_estimate_en", true);
   nh_->get_parameter("vio/exposure_estimate_en", exposure_estimate_en);
-  nh_->declare_parameter<bool>("vio/exposure_estimate_en", exposure_estimate_en);
-  nh_->get_parameter("vio/exposure_estimate_en", exposure_estimate_en);
-  nh_->declare_parameter<double>("vio/inv_expo_cov", inv_expo_cov);
+  nh_->declare_parameter<double>("vio/inv_expo_cov", 0.2);
   nh_->get_parameter("vio/inv_expo_cov", inv_expo_cov);
-  nh_->declare_parameter<double>("time_offset/exposure_time_init", exposure_time_init);
+
+  nh_->declare_parameter<double>("time_offset/exposure_time_init", 0.0);
   nh_->get_parameter("time_offset/exposure_time_init", exposure_time_init);
-  nh_->declare_parameter<double>("time_offset/img_time_offset", img_time_offset);
+  nh_->declare_parameter<double>("time_offset/img_time_offset", 0.0);
   nh_->get_parameter("time_offset/img_time_offset", img_time_offset);
-  nh_->declare_parameter<double>("time_offset/imu_time_offset", imu_time_offset);
+  nh_->declare_parameter<double>("time_offset/imu_time_offset", 0.0);
   nh_->get_parameter("time_offset/imu_time_offset", imu_time_offset);
-  nh_->declare_parameter<bool>("uav/imu_rate_odom", imu_prop_enable);
+  nh_->declare_parameter<bool>("uav/imu_rate_odom", false);
   nh_->get_parameter("uav/imu_rate_odom", imu_prop_enable);
-  nh_->declare_parameter<bool>("uav/gravity_align_en", gravity_align_en);
+  nh_->declare_parameter<bool>("uav/gravity_align_en", false);
   nh_->get_parameter("uav/gravity_align_en", gravity_align_en);
-  nh_->declare_parameter<string>("evo/seq_name", seq_name);
+
+  nh_->declare_parameter<string>("evo/seq_name", "01");
   nh_->get_parameter("evo/seq_name", seq_name);
-  nh_->declare_parameter<bool>("evo/pose_output_en", pose_output_en);
+  nh_->declare_parameter<bool>("evo/pose_output_en", false);
   nh_->get_parameter("evo/pose_output_en", pose_output_en);
-  nh_->declare_parameter<double>("imu/gyr_cov", gyr_cov);
+  nh_->declare_parameter<double>("imu/gyr_cov", 1.0);
   nh_->get_parameter("imu/gyr_cov", gyr_cov);
-  nh_->declare_parameter<double>("imu/acc_cov", acc_cov);
+  nh_->declare_parameter<double>("imu/acc_cov", 1.0);
   nh_->get_parameter("imu/acc_cov", acc_cov);
+  nh_->declare_parameter<int>("imu/imu_int_frame", 3);
+  nh_->get_parameter("imu/imu_int_frame", imu_int_frame);
+  nh_->declare_parameter<bool>("imu/imu_en", false);
+  nh_->get_parameter("imu/imu_en", imu_en);
+  nh_->declare_parameter<bool>("imu/gravity_est_en", true);
+  nh_->get_parameter("imu/gravity_est_en", gravity_est_en);
+  nh_->declare_parameter<bool>("imu/ba_bg_est_en", true);
+  nh_->get_parameter("imu/ba_bg_est_en", ba_bg_est_en);
 
-  // nh.param<int>("imu/imu_int_frame", imu_int_frame, 3);
-  // nh.param<bool>("imu/imu_en", imu_en, false);
-  // nh.param<bool>("imu/gravity_est_en", gravity_est_en, true);
-  // nh.param<bool>("imu/ba_bg_est_en", ba_bg_est_en, true);
+  nh_->declare_parameter<double>("preprocess/blind", 0.01);
+  nh_->get_parameter("preprocess/blind", p_pre->blind);
+  nh_->declare_parameter<double>("preprocess/filter_size_surf", 0.5);
+  nh_->get_parameter("preprocess/filter_size_surf", filter_size_surf_min);
+  nh_->declare_parameter<int>("preprocess/lidar_type", AVIA);
+  nh_->get_parameter("preprocess/lidar_type", p_pre->lidar_type);
+  nh_->declare_parameter<int>("preprocess/scan_line", 6);
+  nh_->get_parameter("preprocess/scan_line", p_pre->N_SCANS);
+  nh_->declare_parameter<int>("preprocess/point_filter_num", 3);
+  nh_->get_parameter("preprocess/point_filter_num", p_pre->point_filter_num);
+  nh_->declare_parameter<bool>("preprocess/feature_extract_enabled", false);
+  nh_->get_parameter("preprocess/feature_extract_enabled", p_pre->feature_enabled);
 
-  // nh.param<double>("preprocess/blind", p_pre->blind, 0.01);
-  // nh.param<double>("preprocess/filter_size_surf", filter_size_surf_min, 0.5);
-  // nh.param<int>("preprocess/lidar_type", p_pre->lidar_type, AVIA);
-  // nh.param<int>("preprocess/scan_line", p_pre->N_SCANS, 6);
-  // nh.param<int>("preprocess/point_filter_num", p_pre->point_filter_num, 3);
-  // nh.param<bool>("preprocess/feature_extract_enabled", p_pre->feature_enabled, false);
-
-  // nh.param<int>("pcd_save/interval", pcd_save_interval, -1);
-  // nh.param<bool>("pcd_save/pcd_save_en", pcd_save_en, false);
-  // nh.param<bool>("pcd_save/colmap_output_en", colmap_output_en, false);
-  // nh.param<double>("pcd_save/filter_size_pcd", filter_size_pcd, 0.5);
+  nh_->declare_parameter<int>("pcd_save/interval", -1);
+  nh_->get_parameter("pcd_save/interval", pcd_save_interval);
+  nh_->declare_parameter<bool>("pcd_save/pcd_save_en", false);
+  nh_->get_parameter("pcd_save/pcd_save_en", pcd_save_en);
+  nh_->declare_parameter<bool>("pcd_save/colmap_output_en", false);
+  nh_->get_parameter("pcd_save/colmap_output_en", colmap_output_en);
+  nh_->declare_parameter<double>("pcd_save/filter_size_pcd", 0.5);
+  nh_->get_parameter("pcd_save/filter_size_pcd", filter_size_pcd);
   // nh.param<vector<double>>("extrin_calib/extrinsic_T", extrinT, vector<double>());
   // nh.param<vector<double>>("extrin_calib/extrinsic_R", extrinR, vector<double>());
-  // nh.param<vector<double>>("extrin_calib/Pcl", cameraextrinT, vector<double>());
-  // nh.param<vector<double>>("extrin_calib/Rcl", cameraextrinR, vector<double>());
-  // nh.param<double>("debug/plot_time", plot_time, -10);
-  // nh.param<int>("debug/frame_cnt", frame_cnt, 6);
+  extrinT = vector<double>{0.04165, 0.02326, -0.0284};
+  extrinR = vector<double>{1, 0, 0, 0, 1, 0, 0, 0, 1};
+  nh_->declare_parameter<double>("debug/plot_time", -10);
+  nh_->get_parameter("debug/plot_time", plot_time);
+  nh_->declare_parameter<int>("debug/frame_cnt", 6);
+  nh_->get_parameter("debug/frame_cnt", frame_cnt);
 
-  // nh.param<double>("publish/blind_rgb_points", blind_rgb_points, 0.01);
-  // nh.param<int>("publish/pub_scan_num", pub_scan_num, 1);
-  // nh.param<bool>("publish/pub_effect_point_en", pub_effect_point_en, false);
-  // nh.param<bool>("publish/dense_map_en", dense_map_en, false);
+  nh_->declare_parameter<double>("publish/blind_rgb_points", 0.01);
+  nh_->get_parameter("publish/blind_rgb_points", blind_rgb_points);
+  nh_->declare_parameter<int>("publish/pub_scan_num", 1);
+  nh_->get_parameter("publish/pub_scan_num", pub_scan_num);
+  nh_->declare_parameter<bool>("publish/pub_effect_point_en", false);
+  nh_->get_parameter("publish/pub_effect_point_en", pub_effect_point_en);
+  nh_->declare_parameter<bool>("publish/dense_map_en", false);
+  nh_->get_parameter("publish/dense_map_en", dense_map_en);
 
   p_pre->blind_sqr = p_pre->blind * p_pre->blind;
 }
@@ -176,9 +194,9 @@ void LIVMapper::initializeSubscribersAndPublishers(rclcpp::Node::SharedPtr nh)
   //           nh.subscribe(lid_topic, 200000, &LIVMapper::standard_pcl_cbk, this);
   // sub_imu = nh.subscribe(imu_topic, 200000, &LIVMapper::imu_cbk, this);
 
-  sub_pcl = nh->create_subscription<livox_ros_driver2::msg::CustomMsg>(lid_topic,200000,
+  sub_pcl = nh->create_subscription<livox_ros_driver2::msg::CustomMsg>("lid_topic",200000,
             std::bind(&LIVMapper::livox_pcl_cbk, this, std::placeholders::_1));
-  sub_imu = nh->create_subscription< sensor_msgs::msg::Imu>(imu_topic,10,
+  sub_imu = nh->create_subscription< sensor_msgs::msg::Imu>("imu_topic",10,
             std::bind(&LIVMapper::imu_cbk, this, std::placeholders::_1));
   
   pubLaserCloudFullRes = nh->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered", 100);

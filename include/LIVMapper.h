@@ -72,7 +72,7 @@ public:
   std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map;
   
   string root_dir;
-  string lid_topic, imu_topic, seq_name, img_topic;
+  string lid_topic, imu_topic, seq_name;
   V3D extT;
   M3D extR;
 
@@ -128,8 +128,7 @@ public:
   vector<pointWithVar> _pv_list;
   vector<double> extrinT;
   vector<double> extrinR;
-  vector<double> cameraextrinT;
-  vector<double> cameraextrinR;
+
   // double IMG_POINT_COV;
 
   PointCloudXYZI::Ptr visual_sub_map;
