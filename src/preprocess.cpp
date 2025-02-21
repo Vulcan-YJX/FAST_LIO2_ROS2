@@ -94,7 +94,7 @@ void Preprocess::avia_handler(const std::shared_ptr<livox_ros_driver2::msg::Cust
   pl_full.clear();
   double t1 = omp_get_wtime();
   int plsize = msg->point_num;
-  printf("[ Preprocess ] Input point number: %d \n", plsize);
+  // printf("[ Preprocess ] Input point number: %d \n", plsize);
   // printf("point_filter_num: %d\n", point_filter_num);
 
   pl_corn.reserve(plsize);
@@ -192,7 +192,7 @@ void Preprocess::avia_handler(const std::shared_ptr<livox_ros_driver2::msg::Cust
       }
     }
   }
-  printf("[ Preprocess ] Output point number: %zu \n", pl_surf.points.size());
+  // printf("[ Preprocess ] Output point number: %zu \n", pl_surf.points.size());
 }
 
 void Preprocess::l515_handler(const std::shared_ptr<sensor_msgs::msg::PointCloud2> &msg)

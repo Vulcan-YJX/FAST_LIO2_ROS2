@@ -123,10 +123,10 @@ ament_auto_add_library(imu_proc SHARED src/IMU_Processing.cpp)
 ament_auto_add_library(laser_mapping SHARED src/LIVMapper.cpp)
 
 # Add the main executable
-ament_auto_add_executable(fastlivo_mapping src/main.cpp)
+ament_auto_add_executable(fastlio2_mapping src/main.cpp)
 
 # Link libraries to the executable
-target_link_libraries(fastlivo_mapping
+target_link_libraries(fastlio2_mapping
 #   laser_mapping
 #   lio
 #   pre

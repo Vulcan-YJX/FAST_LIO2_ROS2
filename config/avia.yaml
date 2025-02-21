@@ -1,78 +1,65 @@
-laserMapping:
+fastlio2_mapping:
   ros__parameters:
-    common:
-      lid_topic: "/livox/lidar"
-      imu_topic: "/livox/imu"
-      lidar_en: 1
-      ros_driver_bug_fix: false
+    common/lid_topic: "/livox/lidar"
+    common/imu_topic: "/livox/imu"
+    common/lidar_en: 1
+    common/ros_driver_bug_fix: false
 
-    extrin_calib:
-      extrinsic_T: [0.04165, 0.02326, -0.0284]
-      extrinsic_R: [1, 0, 0, 0, 1, 0, 0, 0, 1]
-      Rcl: [0.00610193,-0.999863,-0.0154172,
+    extrin_calib/extrinsic_T: [0.04165, 0.02326, -0.0284]
+    extrin_calib/extrinsic_R: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+    extrin_calib/Rcl: [0.00610193,-0.999863,-0.0154172,
             -0.00615449,0.0153796,-0.999863,
             0.999962,0.00619598,-0.0060598] 
-      Pcl: [0.0194384, 0.104689,-0.0251952]
+    extrin_calib/Pcl: [0.0194384, 0.104689,-0.0251952]
 
-    time_offset:
-      imu_time_offset: 0.0
-      img_time_offset: 0.1
-      exposure_time_init: 0.0
+    time_offset/imu_time_offset: 0.0
+    time_offset/img_time_offset: 0.1
+    time_offset/exposure_time_init: 0.0
 
-    preprocess:
-      point_filter_num: 1
-      filter_size_surf: 0.1
-      lidar_type: 1 # Livox Avia LiDAR
-      scan_line: 6
-      blind: 0.8
+    preprocess/point_filter_num: 1
+    preprocess/filter_size_surf: 0.1
+    preprocess/lidar_type: 1 # Livox Avia LiDAR
+    preprocess/scan_line: 6
+    preprocess/blind: 0.8
 
-    vio:
-      inverse_composition_en: false
-      exposure_estimate_en: false
+    vio/inverse_composition_en: false
+    vio/exposure_estimate_en: false
 
+    imu/imu_en: true
+    imu/imu_int_frame: 30
+    imu/acc_cov: 0.5 # 0.2
+    imu/gyr_cov: 0.3 # 0.5
+    imu/b_acc_cov: 0.0001 # 0.1
+    imu/b_gyr_cov: 0.0001 # 0.1
 
-    imu:
-      imu_en: true
-      imu_int_frame: 30
-      acc_cov: 0.5 # 0.2
-      gyr_cov: 0.3 # 0.5
-      b_acc_cov: 0.0001 # 0.1
-      b_gyr_cov: 0.0001 # 0.1
+    lio/max_iterations: 5
+    lio/dept_err: 0.02
+    lio/beam_err: 0.05
+    lio/min_eigen_value: 0.0025 # 0.005
+    lio/voxel_size: 0.5
+    lio/max_layer: 2
+    lio/max_points_num: 50
+    lio/layer_init_num: [5, 5, 5, 5, 5]
 
-    lio:
-      max_iterations: 5
-      dept_err: 0.02
-      beam_err: 0.05
-      min_eigen_value: 0.0025 # 0.005
-      voxel_size: 0.5
-      max_layer: 2
-      max_points_num: 50
-      layer_init_num: [5, 5, 5, 5, 5]
+    local_map/map_sliding_en: false
+    local_map/half_map_size: 100
+    local_map/sliding_thresh: 8.0
 
-    local_map:
-      map_sliding_en: false
-      half_map_size: 100
-      sliding_thresh: 8
+    uav/imu_rate_odom: false
+    uav/gravity_align_en: false
 
-    uav:
-      imu_rate_odom: false
-      gravity_align_en: false
+    publish/dense_map_en: true
+    publish/pub_effect_point_en: false 
+    publish/pub_plane_en: false
+    publish/pub_scan_num: 1
+    publish/blind_rgb_points: 0.0
 
-    publish:
-      dense_map_en: true
-      pub_effect_point_en: false 
-      pub_plane_en: false
-      pub_scan_num: 1
-      blind_rgb_points: 0.0
+    evo/seq_name: "CBD_Building_01"
+    evo/pose_output_en: false
 
-    evo:
-      seq_name: "CBD_Building_01"
-      pose_output_en: false
-
-    pcd_save:
-      pcd_save_en: false
-      colmap_output_en: false # need to set interval = -1
-      filter_size_pcd: 0.15
-      interval: -1
+    pcd_save/pcd_save_en: false
+    pcd_save/colmap_output_en: false # need to set interval = -1
+    pcd_save/filter_size_pcd: 0.15
+    pcd_save/interval: -1
       # how many LiDAR frames saved in each pcd file;
       # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
