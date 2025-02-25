@@ -420,9 +420,12 @@ void VoxelMapManager::StateEstimation(StatesGroup &state_propagat)
     TransformLidar(state_.rot_end, state_.pos_end, feats_down_body_, world_lidar);
     M3D rot_var = state_.cov.block<3, 3>(0, 0);
     M3D t_var = state_.cov.block<3, 3>(3, 3);
+
+    std::cout << "[ LIO ]: StateEstimation feats_down_body_ " ;
     for (size_t i = 0; i < feats_down_body_->size(); i++)
     {
       pointWithVar &pv = pv_list_[i];
+      std::cout << pv_list_[i].point_w.x() << " ";
       pv.point_b << feats_down_body_->points[i].x, feats_down_body_->points[i].y, feats_down_body_->points[i].z;
       pv.point_w << world_lidar->points[i].x, world_lidar->points[i].y, world_lidar->points[i].z;
 
@@ -433,7 +436,7 @@ void VoxelMapManager::StateEstimation(StatesGroup &state_propagat)
       pv.body_var = body_cov_list_[i];
     }
     ptpl_list_.clear();
-
+    std::cout << std::endl;
     // double t1 = omp_get_wtime();
 
     BuildResidualListOMP(pv_list_, ptpl_list_);
